@@ -1,0 +1,13 @@
+[workspace]
+members = [
+    "l2toolbox-core",
+    "l2toolbox-gui"
+]
+resolver = "3"
+
+[profile.release]
+strip = true
+lto = true
+codegen-units = 1
+opt-level = 3
+panic = "abort"
