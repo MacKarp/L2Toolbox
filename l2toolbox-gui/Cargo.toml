@@ -1,0 +1,11 @@
+[package]
+name = "l2toolbox-gui"
+version = "0.1.0"
+edition = "2024"
+authors = ["Maciej Karpiński"]
+license = "GPL-3.0"
+readme = "README.md"
+
+[dependencies]
+l2toolbox-core = { path = "../l2toolbox-core" }
+iced = {version = "0.13.1"}
