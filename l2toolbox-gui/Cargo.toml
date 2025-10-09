@@ -13,6 +13,8 @@ directories = "6.0.0"
 toml = "0.9.5"
 serde = { version = "1.0.219", features = ["derive"] }
 chrono = "0.4.41"
+fluent = "0.17.0"
+unic-langid ={version = "0.9.6",features = ["unic-langid-macros", "serde"]}
 
 [dev-dependencies]
 tempfile = "3.20.0"

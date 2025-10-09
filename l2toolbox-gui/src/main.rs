@@ -1,6 +1,7 @@
 mod app;
 mod config;
 mod states;
+mod translations;
 
 use app::App;
 
