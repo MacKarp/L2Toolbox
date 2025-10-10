@@ -6,38 +6,49 @@ on:
   pull_request:
   workflow_dispatch:
 
-env:
-  CARGO_TERM_COLOR: always
-
 jobs:
-  build_and_test:
-    name: Build, Lint, Format & Test (Windows)
+  cargo-check:
+    name: Cargo Check
     runs-on: windows-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
-
-      - name: Set up Rust toolchain (stable)
-        uses: actions-rust-lang/setup-rust-toolchain@v1
+      - uses: actions/checkout@v5
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           toolchain: stable
-          components: clippy, rustfmt
           cache: true
-          override: true
+      - run: cargo check --all --locked --verbose
 
-      - name: Run cargo check
-        run: cargo check --all --locked --verbose
-        continue-on-error: true
+  cargo-clippy:
+    name: Cargo Clippy
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          components: clippy
+          cache: true
+      - run: cargo clippy --all-targets --all-features -- -D warnings
 
-      - name: Run cargo fmt
-        run: cargo fmt --all -- --check
-        continue-on-error: true
-
-      - name: Run cargo clippy
-        run: cargo clippy --all-targets --all-features -- -D warnings
-        continue-on-error: true
-
-      - name: Run cargo test
-        run: cargo test --all --locked --verbose
-        continue-on-error: true
+  cargo-test:
+    name: Cargo Test
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          cache: true
+      - run: cargo test --all --locked --verbose
+      
+  cargo-fmt:
+    name: Cargo Fmt
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: stable
+          components: rustfmt
+          cache: true
+      - run: cargo fmt --all -- --check
