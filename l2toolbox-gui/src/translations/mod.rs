@@ -142,7 +142,6 @@ fn load_ftl_resource(lang: &LanguageIdentifier) -> Result<FluentResource, String
 mod tests {
     use super::*;
     use fluent::FluentArgs;
-    use std::fs;
 
     #[test]
     fn test_load_language_names() {
@@ -185,7 +184,7 @@ mod tests {
     #[test]
     fn test_debug_format() {
         let mgr = I18nManager::new(langid!("pl-PL")).unwrap();
-        let dbg = format!("{:?}", mgr);
+        let dbg = format!("{mgr:?}");
         assert!(dbg.contains("I18nManager"));
     }
 

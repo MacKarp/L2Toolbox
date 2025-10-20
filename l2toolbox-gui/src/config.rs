@@ -1,8 +1,6 @@
 use chrono::Local;
 use directories::ProjectDirs;
 use serde::{Deserialize, Serialize};
-use std::fs::File;
-use std::io::Write;
 use std::thread;
 use std::time::Duration;
 use std::{fs, path::PathBuf};
@@ -32,15 +30,15 @@ impl Config {
         let config_dir = project_dirs.config_dir();
         if !config_dir.exists() {
             fs::create_dir_all(config_dir)
-                .map_err(|e| format!("Failed to create config directory: {}", e))?;
+                .map_err(|e| format!("Failed to create config directory: {e}"))?;
         }
 
         let file_path = config_dir.join("config.toml");
         if file_path.exists() {
-            println!("Loading existing file: {:?}", file_path);
+            println!("Loading existing file: {file_path:?}");
             Config::load_config(&file_path)
         } else {
-            println!("Creating new file: {:?}", file_path);
+            println!("Creating new file: {file_path:?}");
             Config::create_default_config(&file_path)?;
             Config::load_config(&file_path)
         }
@@ -52,11 +50,10 @@ impl Config {
         match toml::from_str::<Config>(&toml_file) {
             Ok(config) => Ok(config),
             Err(e) => {
-                eprintln!("Failed to parse config file: {}", e);
+                eprintln!("Failed to parse config file: {e}");
 
                 let timestamp = Local::now().format("%Y%m%d_%H%M%S");
-                let backup_path =
-                    file_path.with_file_name(format!("config.toml_{}.bak", timestamp));
+                let backup_path = file_path.with_file_name(format!("config.toml_{timestamp}.bak"));
 
                 fs::rename(file_path, backup_path)?;
 
@@ -89,7 +86,7 @@ impl Config {
         for attempt in 1..=3 {
             match fs::rename(&tmp_path, &file_path) {
                 Ok(_) => {
-                    println!("✅ Config saved to {:?}", file_path);
+                    println!("✅ Config saved to {file_path:?}");
                     return Ok(());
                 }
                 Err(e) if e.raw_os_error() == Some(5) || e.raw_os_error() == Some(32) => {
@@ -182,7 +179,7 @@ mod tests {
                     .unwrap()
                     .to_string_lossy()
                     .starts_with("config.toml_")
-                    && path.extension().map_or(false, |ext| ext == "bak")
+                    && path.extension().is_some_and(|ext| ext == "bak")
                 {
                     Some(path)
                 } else {

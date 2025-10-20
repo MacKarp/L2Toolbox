@@ -12,7 +12,7 @@ pub struct App {
     config: Config,
     i18n: I18nManager,
 }
-
+#[allow(dead_code)]
 #[derive(Default, Debug)]
 enum AppState {
     #[default]
@@ -75,7 +75,7 @@ impl App {
             }
             Message::ConfigSaveButtonPressed => {
                 if let Err(e) = Config::save_config(&self.config) {
-                    eprintln!("❌ Failed to save config: {}", e);
+                    eprintln!("❌ Failed to save config: {e}");
                 } else {
                     println!("✅ Config saved successfully!");
                     self.message = Message::None;
