@@ -75,16 +75,16 @@ pub fn get_language_names() -> Result<Vec<(LanguageIdentifier, String)>, io::Err
 
     for entry in fs::read_dir(dir)? {
         let path = entry?.path();
-        if path.extension().is_some_and(|ext| ext == "ftl") {
-            if let Some(file_stem) = path.file_stem().and_then(|s| s.to_str()) {
-                match file_stem.parse::<LanguageIdentifier>() {
-                    Ok(langid) => {
-                        if let Ok(name) = get_language_name(&path, &langid) {
-                            names.push((langid, name));
-                        }
+        if path.extension().is_some_and(|ext| ext == "ftl")
+            && let Some(file_stem) = path.file_stem().and_then(|s| s.to_str())
+        {
+            match file_stem.parse::<LanguageIdentifier>() {
+                Ok(langid) => {
+                    if let Ok(name) = get_language_name(&path, &langid) {
+                        names.push((langid, name));
                     }
-                    Err(_) => eprintln!("⚠️ Skipping invalid locale: {file_stem}"),
                 }
+                Err(_) => eprintln!("⚠️ Skipping invalid locale: {file_stem}"),
             }
         }
     }
