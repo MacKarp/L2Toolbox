@@ -1,11 +1,11 @@
 use crate::app::Message;
-use crate::config::Config;
+use crate::config::ApplicationConfig;
 use crate::translations::{self, I18nManager};
 use fluent::FluentArgs;
 use iced::widget::{Text, button, column, pick_list, scrollable, vertical_space};
 use iced::{Center, Element, Fill};
 
-pub fn view(config: &Config, i18n: &I18nManager) -> Element<'static, Message> {
+pub fn view(config: &ApplicationConfig, i18n: &I18nManager) -> Element<'static, Message> {
     // Prepare arguments for translation
     let mut args = FluentArgs::new();
     args.set("tabCount", "5");

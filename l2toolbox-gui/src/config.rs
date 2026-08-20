@@ -7,22 +7,48 @@ use std::{fs, path::PathBuf};
 use unic_langid::{LanguageIdentifier, langid};
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct Config {
-    pub last_profile: String,
+pub struct ApplicationConfig {
+    #[serde(
+        default,
+        deserialize_with = "empty_string_is_none",
+        serialize_with = "none_as_empty_string"
+    )]
+    pub last_profile_id: Option<String>,
     pub language: LanguageIdentifier,
 }
 
-impl Default for Config {
+impl Default for ApplicationConfig {
     fn default() -> Self {
-        Config {
-            last_profile: "".to_string(),
+        ApplicationConfig {
+            last_profile_id: None,
             language: langid!("en-GB"),
         }
     }
 }
 
-impl Config {
-    pub fn load_or_create() -> Result<Config, Box<dyn std::error::Error>> {
+fn empty_string_is_none<'de, D>(deserializer: D) -> Result<Option<String>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let s = String::deserialize(deserializer)?;
+    if s.trim().is_empty() {
+        Ok(None)
+    } else {
+        Ok(Some(s))
+    }
+}
+fn none_as_empty_string<S>(value: &Option<String>, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    match value {
+        Some(v) => serializer.serialize_str(v),
+        None => serializer.serialize_str(""),
+    }
+}
+
+impl ApplicationConfig {
+    pub fn load_or_create() -> Result<ApplicationConfig, Box<dyn std::error::Error>> {
         println!("Loading config!");
         let project_dirs = ProjectDirs::from("", "", "L2Toolbox")
             .ok_or("Can't obtain default directory paths!")?;
@@ -36,18 +62,18 @@ impl Config {
         let file_path = config_dir.join("config.toml");
         if file_path.exists() {
             println!("Loading existing file: {file_path:?}");
-            Config::load_config(&file_path)
+            ApplicationConfig::load_config(&file_path)
         } else {
             println!("Creating new file: {file_path:?}");
-            Config::create_default_config(&file_path)?;
-            Config::load_config(&file_path)
+            ApplicationConfig::create_default_config(&file_path)?;
+            ApplicationConfig::load_config(&file_path)
         }
     }
 
-    fn load_config(file_path: &PathBuf) -> Result<Config, Box<dyn std::error::Error>> {
+    fn load_config(file_path: &PathBuf) -> Result<ApplicationConfig, Box<dyn std::error::Error>> {
         let toml_file = fs::read_to_string(file_path)?;
 
-        match toml::from_str::<Config>(&toml_file) {
+        match toml::from_str::<ApplicationConfig>(&toml_file) {
             Ok(config) => Ok(config),
             Err(e) => {
                 eprintln!("Failed to parse config file: {e}");
@@ -65,12 +91,12 @@ impl Config {
     }
 
     fn create_default_config(file_path: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
-        let config = Config::default();
+        let config = ApplicationConfig::default();
         let toml_file = toml::to_string(&config)?;
         fs::write(file_path, toml_file)?;
         Ok(())
     }
-    pub fn save_config(config: &Config) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn save_config(config: &ApplicationConfig) -> Result<(), Box<dyn std::error::Error>> {
         let project_dirs = directories::ProjectDirs::from("", "", "L2Toolbox")
             .ok_or("❌ Can't obtain default directory paths!")?;
         let config_dir = project_dirs.config_dir();
@@ -109,8 +135,8 @@ mod tests {
 
     #[test]
     fn test_default_config_values() {
-        let config = Config::default();
-        assert_eq!(config.last_profile, "");
+        let config = ApplicationConfig::default();
+        assert_eq!(config.last_profile_id, None);
         assert_eq!(config.language, langid!("en-GB"));
     }
 
@@ -119,10 +145,10 @@ mod tests {
         let dir = tempdir().unwrap();
         let config_path = dir.path().join("config.toml");
 
-        Config::create_default_config(&config_path).unwrap();
+        ApplicationConfig::create_default_config(&config_path).unwrap();
         let contents = fs::read_to_string(&config_path).unwrap();
 
-        assert!(contents.contains("last_profile = \"\""));
+        assert!(contents.contains("last_profile_id = \"\""));
         assert!(contents.contains("language = \"en-GB\""));
     }
 
@@ -132,13 +158,16 @@ mod tests {
         let config_path = dir.path().join("config.toml");
 
         let config_data = r#"
-        last_profile = "test_user"
+        last_profile_id = "550e8400-e29b-41d4-a716-446655440000"
         language = "pl-PL"
     "#;
         fs::write(&config_path, config_data).unwrap();
 
-        let config = Config::load_config(&config_path).unwrap();
-        assert_eq!(config.last_profile, "test_user");
+        let config = ApplicationConfig::load_config(&config_path).unwrap();
+        assert_eq!(
+            config.last_profile_id,
+            Some("550e8400-e29b-41d4-a716-446655440000".to_string())
+        );
         assert_eq!(config.language, langid!("pl-PL"));
     }
 
@@ -148,11 +177,11 @@ mod tests {
         let config_path = dir.path().join("config.toml");
 
         // Create default config
-        Config::create_default_config(&config_path).unwrap();
+        ApplicationConfig::create_default_config(&config_path).unwrap();
 
         // Load config
-        let loaded_config = Config::load_config(&config_path).unwrap();
-        assert_eq!(loaded_config.last_profile, "");
+        let loaded_config = ApplicationConfig::load_config(&config_path).unwrap();
+        assert_eq!(loaded_config.last_profile_id, None);
         assert_eq!(loaded_config.language, langid!("en-GB"));
     }
 
@@ -165,8 +194,8 @@ mod tests {
         fs::write(&config_path, "not a valid toml").unwrap();
 
         // Attempt to load, should recover
-        let recovered_config = Config::load_config(&config_path).unwrap();
-        assert_eq!(recovered_config.last_profile, "");
+        let recovered_config = ApplicationConfig::load_config(&config_path).unwrap();
+        assert_eq!(recovered_config.last_profile_id, None);
         assert_eq!(recovered_config.language, langid!("en-GB"));
 
         // Check that backup file was created
@@ -193,15 +222,15 @@ mod tests {
 
     #[test]
     fn test_config_serialization_roundtrip() {
-        let original = Config {
-            last_profile: "user123".to_string(),
+        let original = ApplicationConfig {
+            last_profile_id: Some("550e8400-e29b-41d4-a716-446655440000".to_string()),
             language: langid!("pl-PL"),
         };
 
         let toml_str = toml::to_string(&original).unwrap();
-        let deserialized: Config = toml::from_str(&toml_str).unwrap();
+        let deserialized: ApplicationConfig = toml::from_str(&toml_str).unwrap();
 
-        assert_eq!(original.last_profile, deserialized.last_profile);
+        assert_eq!(original.last_profile_id, deserialized.last_profile_id);
         assert_eq!(original.language, deserialized.language);
     }
 }
