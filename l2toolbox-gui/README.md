@@ -1,6 +1,6 @@
 # l2toolbox-gui
 
-Graphical user interface for the L2Toolbox project, created with the Iced toolkit.
+Graphical user interface for the L2Toolbox project, created with the [Iced](https://iced.rs/) toolkit.
 
 This crate depends on l2toolbox-core and is part of the L2Toolbox workspace.
 
@@ -19,7 +19,7 @@ On Windows, the config file is stored at:
 ### 🧾 Config Structure
 
 ```toml
-last_profile = ""
+last_profile_id = ""
 language = "en-GB"
 ```
 
@@ -29,17 +29,50 @@ language = "en-GB"
 
 | Field         | Type   | Default | Description                          |
 |---------------|--------|---------|--------------------------------------|
-| `last_profile`| String | `""`    | Stores the name of the last used profile |
+| `last_profile_id`| String | `""`    | Stores the UUID v4 of the last used profile |
 | `language`    | String | `"en-GB"`  | Language preference (any valid BCP47 code corresponding to a `.ftl` file) |
 
-
 ---
+
 
 ### 🔄 Behavior
 
 - If the config file is **missing**, a default one is created automatically.
-- If the config file is **corrupted**, the application will return an error during startup.
+- If the config file is **corrupted**, it is renamed to `config.toml_<timestamp>.bak` and a new default config is created automatically.
 - All fields have default values to ensure compatibility with older or incomplete config files.
+---
+
+## 🛠 Profile Configuration
+The application uses a user-specific profile configuration file to store information about different profiles.
+
+### 📁 Profile Config File Location
+On Windows, the profile config file is stored at:
+
+```
+%APPDATA%\L2Toolbox\profiles\<uuid>\profile_config.toml
+```
+---
+
+### 🧾 Profile Config Structure
+
+```toml
+profile_name = ""
+lineage2_path = ""
+system_path = ""
+custom_subdir = false
+```
+---
+
+### 🧰 Default Values
+
+| Field         | Type   | Default | Description                          |
+|---------------|--------|---------|--------------------------------------|
+| `profile_name`| String | `""`    | Display name of the profile |
+| `lineage2_path`    | String | `""`  | Path to the Lineage 2 main directory |
+|`system_path`|String (optional)|`""`|Path to the custom System directory (only when `custom_subdir` is true)|
+|`custom_subdir`|Bool|`false`|Whether to use a custom System subdirectory|
+
+---
 
 ## 🌐 Translation
 
