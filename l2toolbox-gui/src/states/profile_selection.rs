@@ -3,7 +3,7 @@ use crate::runtime::Runtime;
 use crate::translations::I18nManager;
 use iced::widget::PickList;
 use iced::widget::row;
-use iced::widget::{Text, button, column, scrollable, vertical_space};
+use iced::widget::{Text, button, column, scrollable, space};
 use iced::{Center, Element, Fill};
 
 pub fn view(i18n: &I18nManager, runtime: &Runtime) -> Element<'static, Message> {
@@ -38,7 +38,7 @@ pub fn view(i18n: &I18nManager, runtime: &Runtime) -> Element<'static, Message> 
     .align_y(Center);
 
     let content = column![
-        vertical_space().height(10),
+        space().height(10),
         Text::new(i18n.text("select-profile")),
         pick_list,
         button_row

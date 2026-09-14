@@ -2,7 +2,7 @@ use crate::app::Message;
 use crate::config::ApplicationConfig;
 use crate::translations::{self, I18nManager};
 use fluent::FluentArgs;
-use iced::widget::{Text, button, column, pick_list, scrollable, vertical_space};
+use iced::widget::{Text, button, column, pick_list, scrollable, space};
 use iced::{Center, Element, Fill};
 
 pub fn view(config: &ApplicationConfig, i18n: &I18nManager) -> Element<'static, Message> {
@@ -44,14 +44,14 @@ pub fn view(config: &ApplicationConfig, i18n: &I18nManager) -> Element<'static, 
 
     // Build UI content
     let content = column![
-        vertical_space().height(10),
+        space().height(10),
         Text::new(i18n.text("select-language")),
         pick_list,
-        vertical_space().height(10),
+        space().height(10),
         Text::new(i18n.text("fallback-key")),
-        vertical_space().height(10),
+        space().height(10),
         Text::new(i18n.text("non-existing-key")),
-        vertical_space().height(10),
+        space().height(10),
         button(Text::new(i18n.text("save-button"))).on_press(Message::ConfigSaveButtonPressed)
     ]
     .width(Fill)

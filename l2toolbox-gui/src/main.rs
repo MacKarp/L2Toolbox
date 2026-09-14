@@ -8,5 +8,7 @@ mod translations;
 use app::App;
 
 fn main() -> iced::Result {
-    iced::application("L2Toolbox", App::update, App::view).run_with(App::initialize)
+    iced::application(App::initialize, App::update, App::view)
+        .title("L2Toolbox")
+        .run()
 }

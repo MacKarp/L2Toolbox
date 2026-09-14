@@ -48,7 +48,8 @@ pub fn view(i18n: &I18nManager, runtime: &Runtime) -> Element<'static, Message> 
     ];
 
     let custom_dirs_row: Element<Message> = row![
-        checkbox("Use custom subdirectories", custom_subdirectory)
+        checkbox(custom_subdirectory)
+            .label("Use custom subdirectories")
             .on_toggle(Message::CustomSubdirectoryToggled),
     ]
     .into();
